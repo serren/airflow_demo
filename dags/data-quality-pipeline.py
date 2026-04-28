@@ -14,6 +14,9 @@ from airflow.providers.dbt.cloud.operators.dbt import (
     DbtCloudRunJobOperator,
 )
 
+from airflow.sensors.base import BaseSensorOperator
+from airflow.utils.decorators import apply_defaults
+
 log = logging.getLogger(__name__)
 
 default_args = {
@@ -27,6 +30,29 @@ default_args = {
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 PROCESSED_DIR = os.path.join(DATA_DIR, 'processed')
+
+class DirectorySensor(BaseSensorOperator):
+    @apply_defaults
+    def __init__(self, directory: str, file_extension: str = '.csv', min_files: int = 1, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.directory = directory
+        self.file_extension = file_extension
+        self.min_files = min_files
+
+    def poke(self, context):
+        self.log.info(f"Checking for files with extension {self.file_extension} in directory: {self.directory}")
+
+        try:
+            files = [
+                f for f in os.listdir(self.directory)
+                if f.lower().endswith(self.file_extension.lower())
+            ]
+            self.log.info(f"Found files: {files}")
+
+            return len(files) >= self.min_files
+        except Exception as e:
+            self.log.error(f"Error accessing directory {self.directory}: {e}")
+            return False
 
 
 def install_dependencies():
@@ -82,6 +108,15 @@ with DAG(
     catchup=False,
 ) as dag:
 
+    wait_for_files = DirectorySensor(
+        task_id='wait_for_files_in_directory',
+        directory=DATA_DIR,
+        file_extension='.csv',
+        min_files=1,
+        poke_interval=20,  # every 20 seconds
+        timeout=60 * 15,   # 15 minutes
+    )
+
     task_install = PythonOperator(
         task_id='install-dependencies',
         python_callable=install_dependencies,
@@ -102,4 +137,4 @@ with DAG(
         timeout=300,
     )
 
-    task_install >> task_ingest >> trigger_dbt_cloud_job_run
+    wait_for_files >> task_install >> task_ingest >> trigger_dbt_cloud_job_run
