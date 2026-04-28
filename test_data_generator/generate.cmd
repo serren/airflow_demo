@@ -1,0 +1,1 @@
+java -jar test-data-generator-1.0.0-all.jar metrics-batch.json

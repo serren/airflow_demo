@@ -1,0 +1,7 @@
+services:
+  webserver:
+    ports:
+      - "127.0.0.1:6563:8080"
+  postgres:
+    ports:
+      - "127.0.0.1:18741:5432"

@@ -1,0 +1,44 @@
+{
+  "@type": "windowed-metrics",
+  "numberOfIterations": 2500,
+  "timer": {
+    "@type": "synthetic",
+    "startTime": "2020-09-01T12:35:05.001Z",
+    "stepMillis": 10000
+  },
+  "outputFilePath": "test-output",
+  "metrics": {
+    "user-service": {
+      "cpu": {
+        "unit": "percent",
+        "averageFrom": 10.0,
+        "averageTo": 25.0,
+        "minDiff": 2.0,
+        "maxDiff": 5.0
+      },
+      "ram": {
+        "unit": "percent",
+        "averageFrom": 50.0,
+        "averageTo": 75.0,
+        "minDiff": 12.0,
+        "maxDiff": 20.0
+      }
+    },
+    "order-service": {
+      "cpu": {
+        "unit": "percent",
+        "averageFrom": 20.0,
+        "averageTo": 30.0,
+        "minDiff": 9.0,
+        "maxDiff": 15.0
+      },
+      "ram": {
+        "unit": "percent",
+        "averageFrom": 10.0,
+        "averageTo": 90.0,
+        "minDiff": 5.0,
+        "maxDiff": 6.0
+      }
+    }
+  }
+}
